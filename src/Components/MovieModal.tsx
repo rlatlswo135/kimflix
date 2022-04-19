@@ -56,22 +56,15 @@ interface Iprops {
 
 const Container = styled.div<{bgPhoto:string}>`
     height:100%;
-    padding:5%;
-    grid-template-rows:1fr 1fr;
-    background-image: linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.9)),url(${props => props.bgPhoto});
+    padding:5% 5%;
+    padding-bottom: 0%;
+    background-image: linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.9)),url(${props => props.bgPhoto});
     background-size: cover;
     background-position: center center;
 `
-const ContentBox = styled.div`
-    height:100%;
-    width:100%;
-    display:flex;
-    color:${props => props.theme.white.darker};
-`
-const ContentText=styled.div`
-    flex:1;
-`
-const Title = styled.div`
+
+const Title = styled(motion.div)`
+    height:12%;
     padding-bottom:2%;
     border-bottom:1px solid rgba(0,0,0,0.08);
     h1{
@@ -84,10 +77,8 @@ const Title = styled.div`
         letter-spacing: 0.1em;
         font-style: oblique;
     }
-`
-const TextContent = styled.div`
-    
-`
+    `
+
 const ContentInfo = styled.div`
     display:flex;
     align-items: center;
@@ -96,60 +87,74 @@ const ContentInfo = styled.div`
     padding-top:1%;
     padding-left:1%;
     div{
-        font-size:1.3em;
-        color:rgba(233,255,155,0.9);
+        font-size:1.4em;
+        color:rgba(255,255,255,0.7);
+        font-weight: 500;
         height:15px;
         margin-right: 1%;
         &:first-child{
             font-weight: 900;
         }
+        &:last-child{
+            color:yellow;
+            span{
+                font-size:0.6em;
+                color:rgba(255,255,255,0.7);
+            }
+        }
     }
+    `
+const TextContent = styled(motion.div)`
+    display:grid;
+    grid-template-rows: 1fr 3.2fr;
+    height:88%;
+`
+const InfoWrap = styled.div`
 `
 const OverView = styled.div`
+    color:white;
     font-size:1.3em;
     font-weight: 600;
     letter-spacing: 0.1em;
 `
-const ContentVideo = styled.div`
+const ContentVideo = styled(motion.div)`
     overflow: hidden;
     position: relative;
-    margin-top: 5%;
     iframe{
         width:100%;
-        height:50vh;
+        height:100%;
     }
 `
 const MovieModal = (props:Iprops) => {
     const movieId = useParams().id || props.movieId
     const {isLoading,data:movieDetail} = useQuery<IMovieDetail>(['movieDetail',movieId],()=>getMovieDetail(Number(movieId)))
     const {site:platForm,key:videoKey} = movieDetail?.videos?.results.length ? movieDetail?.videos.results[0] : {site:"",key:""}
-    console.log(makeVideoUrl(platForm,videoKey))
+    console.log(movieDetail)
     return (
         <Container bgPhoto={makeImgUrl(movieDetail?.backdrop_path||"",'w1280')}>
-            <ContentBox>
-                <ContentText>
-                    <Title>
-                        <h1>{movieDetail?.title}</h1>
-                        <h4>{`${movieDetail?.original_title}`}</h4>
-                    </Title>
-                    <TextContent>
-                        <ContentInfo>
-                            <div>{movieDetail?.release_date.split('-')[0]}</div>
-                            {movieDetail?.adult ? <div style={{border:'1px solid red'}}>{"청불"}</div> : null}
-                            {movieDetail?.genres.map((item,index) => <div key={`modal${index}`}>{item.name}</div>)}
-                        </ContentInfo>
-                        <OverView>{movieDetail?.overview}</OverView>
-                        <ContentVideo>
-                            <iframe 
-                            src={makeVideoUrl(platForm,videoKey)}
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            ></iframe>
-                        </ContentVideo>
-                    </TextContent>
-                </ContentText>
-            </ContentBox>
+            <Title initial={{y:-100,opacity:0}} animate={{y:0,opacity:1}} transition={{type:"tween",duration:1}}>
+                <h1>{movieDetail?.title}</h1>
+                <h4>{`${movieDetail?.original_title}`}</h4>
+            </Title>
+            <TextContent initial={{y:-100,opacity:0}} animate={{y:0,opacity:1}} transition={{type:"tween",duration:1,delay:0.6}}>
+                <InfoWrap>
+                    <ContentInfo>
+                        <div>{movieDetail?.release_date.split('-')[0]}</div>
+                        {movieDetail?.adult ? <div style={{border:'1px solid red'}}>{"청불"}</div> : null}
+                        {movieDetail?.genres.map((item,index) => <div key={`modal${index}`}>{item.name}</div>)}
+                        <div>{`★${movieDetail?.vote_average}`}<span>{`(${movieDetail?.vote_count})`}</span></div>
+                    </ContentInfo>
+                    <OverView>{movieDetail?.overview}</OverView>
+                </InfoWrap>
+                <ContentVideo initial={{opacity:0,y:100}} animate={{opacity:1,y:0}} transition={{delay:1.1,duration:1,type:"tween"}}>
+                    <iframe 
+                    src={makeVideoUrl(platForm,videoKey)}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    ></iframe>
+                </ContentVideo>
+            </TextContent>
             {/* 괄호열고 영문이름 해야할듯 */}
         </Container>
     );
