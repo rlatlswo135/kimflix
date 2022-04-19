@@ -12,6 +12,11 @@ const GlobalStyle = createGlobalStyle`
   *{
     margin:0;
     padding:0;
+    color:${props => props.theme.white.darker};
+  }
+  body{
+    background-color: ${props => props.theme.black.darker};
+    overflow-x:hidden ;
   }
   div{
     box-sizing: border-box;

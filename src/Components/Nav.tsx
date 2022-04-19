@@ -9,7 +9,6 @@ const Header = styled(motion.nav)`
     justify-content: space-between;
     align-items: center;
     position: fixed;
-    background-color: black;
     color:white;
     width:100%;
     top:0;
