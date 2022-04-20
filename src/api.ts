@@ -43,8 +43,8 @@ export function makeVideoUrl(platform:string,key:string){
     const VIDEO_URL = platform==='YouTube' ? `https://www.youtube.com/embed/<<key>>`:`https://vimeo.com/<<key>>`
     return VIDEO_URL.replace('<<key>>',key)
 }
-export async function getNowPlaying(){
-    const url = makeUrl('movie','now_playing','ko-KR')
+export async function getNowPlaying(state:string){
+    const url = makeUrl('movie',state,'ko-KR')
     return await(await fetch(url)).json()
 }
 
@@ -53,6 +53,11 @@ export async function getMovieDetail(movieId:number){
     return await(await fetch(GET_MOVIE_URL)).json()
 }
 
+
+export async function getSimilarMovie(movieId:number){
+    const GET_MOVIE_URL = `https://api.themoviedb.org/3/movie/${movieId}/similar?api_key=${API_KEY}&language=ko-KR&page=1`
+    return await(await fetch(GET_MOVIE_URL)).json()
+}
 
 
 /*
