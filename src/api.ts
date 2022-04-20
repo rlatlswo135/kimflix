@@ -43,7 +43,7 @@ export function makeVideoUrl(platform:string,key:string){
     const VIDEO_URL = platform==='YouTube' ? `https://www.youtube.com/embed/<<key>>`:`https://vimeo.com/<<key>>`
     return VIDEO_URL.replace('<<key>>',key)
 }
-export async function getNowPlaying(state:string){
+export async function getMovies(state:string){
     const url = makeUrl('movie',state,'ko-KR')
     return await(await fetch(url)).json()
 }

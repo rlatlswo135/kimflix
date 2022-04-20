@@ -206,7 +206,7 @@ const MovieModal = (props:Iprops) => {
                         ></iframe>
                     </ContentVideo>
                     :
-                    <ImgSlider movie={similerMovie?{state:'similer',data:similerMovie}:undefined}/>
+                    <ImgSlider movie={similerMovie?{state:'similer',data:similerMovie}:{state:'similer'}} title={'비슷한 컨텐츠'}/>
                 }
             </TextContent>
             {/* 괄호열고 영문이름 해야할듯 */}

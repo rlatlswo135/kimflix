@@ -2,7 +2,7 @@ import React,{useState} from 'react';
 import Nav from '../Components/Nav';
 import styled from 'styled-components';
 import { useQuery } from 'react-query'
-import {getNowPlaying} from '../api'
+import {getMovies} from '../api'
 import { IGetMovies } from '../api';
 import { makeImgUrl } from '../api';
 import { motion,AnimatePresence } from 'framer-motion';
@@ -143,7 +143,7 @@ const Home = () => {
     const navigate = useNavigate()
     const isMovieRoute = useMatch('/movie:id')
     //고유키,fetcher함수. 고유키가 배열. obj도 가능하며 좀더 상세한 고유키를 보여줄수있다
-    const {isLoading:nowMvLoading,data:nowMvData} = useQuery<IGetMovies>(['movies','nowPlaying'],()=>getNowPlaying('now_playing'))
+    const {isLoading:nowMvLoading,data:nowMvData} = useQuery<IGetMovies>(['movies','nowPlaying'],()=>getMovies('now_playing'))
     const [sliderKey,setSliderKey] = useState(0)
     const [leavingSlider,setLeavingSlide] = useState(false)
     const [sliderIndex,setSliderIndex] = useState(0)
@@ -174,11 +174,11 @@ const Home = () => {
             {nowMvLoading ? 
             <Loader>Loading...</Loader> :
             <>
-            <Banner bgPhoto={makeImgUrl(sortedRelease? sortedRelease[0].backdrop_path : "")}>
+            <Banner onClick={sliderKeyUp} bgPhoto={makeImgUrl(sortedRelease? sortedRelease[0].backdrop_path : "")}>
                 <Title>{sortedRelease ? sortedRelease[0].title : null}</Title>
                 <OverView>{sortedRelease ? sortedRelease[0].overview : null}</OverView>
             </Banner>
-                {/* <Slider>
+                <Slider>
                 <AnimatePresence initial={false} onExitComplete={()=>setLeavingSlide(prev => !prev)}>
                     <Row
                     key={sliderKey}
@@ -201,14 +201,13 @@ const Home = () => {
                         layoutId={`${item.id}`}
                         >
                             <img src={makeImgUrl(item.poster_path)}/>
-
                             <RowItemInfo variants={rowItemInfoVars}/>
                         </RowItem>
                             )}
                     </Row>
                 </AnimatePresence>
-                </Slider> */}
-                <ImgSlider movie={{state:'now_playing'}}/>
+                </Slider>
+                {/* <ImgSlider movie={{state:'now_playing'}}/> */}
                 <AnimatePresence>
                 {
                     isMovieRoute?
