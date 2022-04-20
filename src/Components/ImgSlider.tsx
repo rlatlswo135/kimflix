@@ -5,6 +5,7 @@ import {motion,AnimatePresence} from 'framer-motion'
 import {useNavigate,useMatch} from 'react-router-dom'
 import {useQuery} from 'react-query'
 import {IGetMovies,getMovies,makeImgUrl} from '../api'
+import { relative } from 'path';
 interface IProps{
     movie:{
         state:string;
@@ -14,43 +15,23 @@ interface IProps{
 }
 
 const Slider = styled.div`
+    border:10px solid gray;
     width:100%;
-    top:-10%;
-    margin-bottom:2%;
-    border:3px solid gray;
     h1{
+        letter-spacing: 0.1em;
+        font-weight: 900;
         padding-left:2%;
-        padding-bottom:1%;
+        margin-bottom: 1%;
     }
-    position: relative;
 `
-const ArrowWrap = styled.div`
-    position: relative;
-    border:3px solid brown;
-    height:100%;
-`
-const RowItem = styled(motion.div)`
-    height: 200px;
-    cursor:pointer;
+const Row = styled(motion.div)<{bgPhoto?:string}>`
+    display:grid;
+    grid-template-columns: repeat(6,1fr);
+    gap:10px;
+    margin-bottom: 5px;
     position: absolute;
-    top:0px;
-    &:first-child{
-        transform-origin: left center;
-    }
-    &:nth-child(6){
-        transform-origin: right center;
-    }
-    img{
-        width:100%;
-        height:100%;
-    }
-`
-const RowItemInfo = styled(motion.div)`
-    padding:20px;
-    background-color: ${props => props.theme.black.lighter};
-    opacity: 0;
-    width:100%;
-    border:3px solid red;
+    border:3px solid blue;
+    width: 100%;
 `
 const Next = styled(motion.span)`
     position: absolute;
@@ -65,6 +46,11 @@ const Next = styled(motion.span)`
     top:0%;
     left:97.5%; 
 `
+const Wrap = styled.div`
+    border:10px solid green;
+    position: relative;
+    height:300px;
+`
 const Prev = styled(motion.span)`
     position: absolute;
     width:2.5%;
@@ -77,14 +63,45 @@ const Prev = styled(motion.span)`
     top:0%;
     left:0%;
 `
-const Row = styled(motion.div)<{bgPhoto?:string}>`
-    display:grid;
-    grid-template-columns: repeat(6,1fr);
-    gap:10px;
-    position: absolute;
-    top:0px;
-    left:0px;
+const RowItem = styled(motion.div)`
+    height: 200px;
+    cursor:pointer;
+    &:first-child{
+        transform-origin: left center;
+    }
+    &:last-child{
+        transform-origin: right center;
+    }
+    /* 맨처음에는 인덱스로 첫번째 끝번째가 맞냐를 props로 받아서 각각 분기해서 transform-origin을 넣었는데 그냥 이렇게하면 되는거였네생각해보니까 */
+    img{
+        width:100%;
+        height:100%;
+    }
+    /* 이미지를 사이즈에 맞게 퍼센트로 비율을 조정하는듯 */
 `
+const RowItemInfo = styled(motion.div)`
+    padding:20px;
+    background-color: ${props => props.theme.black.lighter};
+    opacity: 0;
+    position: absolute;
+    width:100%;
+`
+const sliderVars={
+    stop:{
+        // 화면끝에서 불러오면 퇴장고 ~ 불러올때 그 첫번째 박스가 붙어서 나오니까 약간의 gap을 준거 => 근데 연속클릭안되게 코드조절하니까 필요없을것같다
+        x:window.innerWidth + 10,
+        opacity:0.1
+    },
+    move:{
+        x:0,
+        opacity:1
+    },
+    exit:{
+        x:-window.innerWidth,
+        opacity:0.1
+    }
+}
+
 const rowItemVars={
     // 다시한번 기억. variants는 커스텀된 애니메이션의 집합체다. 그니까 어느 시점에 트랜지션을 주는것도 가능한거지 => rowitem에 hover시 애니메이션효과를 딜레이를 좀준거
     normal:{
@@ -99,21 +116,6 @@ const rowItemVars={
         }
     }
 }
-const sliderVars={
-    stop:(keydown:boolean)=>({
-        // 화면끝에서 불러오면 퇴장고 ~ 불러올때 그 첫번째 박스가 붙어서 나오니까 약간의 gap을 준거 => 근데 연속클릭안되게 코드조절하니까 필요없을것같다
-        x:keydown ? -window.innerWidth : window.innerWidth + 10,
-        opacity:0.1
-    }),
-    move:{
-        x:0,
-        opacity:1
-    },
-    exit:(keydown:boolean)=>({
-        x: keydown ? window.innerWidth+10 : -window.innerWidth,
-        opacity:0.1
-    })
-}
 const rowItemInfoVars={
     hover:{
         opacity:1,
@@ -122,6 +124,11 @@ const rowItemInfoVars={
             type:"tween"
         }
     }
+}
+const rowItemInfoClickVars={
+    noneClick:{opacity:0},
+    click:{opacity:1},
+    exit:{opacity:0}
 }
 const ImgSlider = ({movie,title}:IProps) => {
     const navigate = useNavigate()
@@ -165,24 +172,38 @@ const ImgSlider = ({movie,title}:IProps) => {
     }
     return (
         <Slider>
-            {/* <h1>{title}</h1> */}
-            {/* <ArrowWrap> */}
-             <AnimatePresence initial={false} onExitComplete={()=>setLeavingSlide(prev => !prev)} custom={prev}>
-                <Row custom={prev} key={sliderKey} variants={sliderVars} initial='stop' animate='move' transition={{duration:1,type:"tween"}} exit='exit'>  
-                    {sortedRelease?.slice(1).slice(sliderIndex,sliderIndex+6)
+            <h1>{title}</h1>
+            <Wrap>
+            <AnimatePresence initial={false} onExitComplete={()=>setLeavingSlide(prev => !prev)}>
+                <Row
+                key={sliderKey}
+                variants={sliderVars}
+                initial='stop'
+                animate='move'
+                transition={{duration:1,type:"tween"}}
+                exit='exit'
+                >  
+                    {sortedRelease?.slice(1)
+                    .slice(sliderIndex,sliderIndex+6)
                     .map((item,index) => 
-                    <RowItem key={item.id} initial='normal' whileHover='hover' variants={rowItemVars}
-                    transition={{duration:0.3}} onClick={()=>goMovieDetail(`${item.id}`)} layoutId={`${item.id}`}>
+                    <RowItem 
+                    key={item.id}
+                    initial='normal'
+                    whileHover='hover'
+                    variants={rowItemVars}
+                    transition={{duration:0.3}}
+                    onClick={()=>goMovieDetail(`${item.id}`)}
+                    layoutId={`${item.id}`}
+                    >
                         <img src={makeImgUrl(item.poster_path)}/>
                         <RowItemInfo variants={rowItemInfoVars}/>
-                    </RowItem>
-                )}
+                    </RowItem>)}
+                    {sliderIndex?<Prev onClick={sliderKeyDown} initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.1}}>{'<'}</Prev>:null}
+                    <Next initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.1}} onClick={sliderKeyUp}>{'>'}</Next>
                 </Row>
-                {sliderIndex?<Prev onClick={sliderKeyDown} initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.1}}>{'<'}</Prev>:null}
-                <Next initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.1}} onClick={sliderKeyUp}>{'>'}</Next>
             </AnimatePresence>
-            {/* </ArrowWrap> */}
-    </Slider>
+            </Wrap>
+        </Slider>
     );
 };
 
