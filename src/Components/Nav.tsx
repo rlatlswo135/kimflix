@@ -1,9 +1,13 @@
 import React,{useEffect, useState} from 'react';
 import styled from 'styled-components'
-import {Link,useLocation} from 'react-router-dom'
+import {Link,useLocation,useNavigate} from 'react-router-dom'
 import {motion,useAnimation,useViewportScroll,useMotionValue, useTransform} from 'framer-motion'
-import {BiSearch} from 'react-icons/bi'
+import {useForm} from 'react-hook-form'
+import {useMatch} from 'react-router-dom'
 
+interface IForm{
+    keyword:string
+}
 const Header = styled(motion.nav)`
     display:flex;
     justify-content: space-between;
@@ -13,7 +17,12 @@ const Header = styled(motion.nav)`
     width:100%;
     top:0;
     height:4.5%;
-    font-size:0.9em;
+    font-size:1.1em;
+    z-index:1000;
+    @media screen and (max-width:1680px){
+        padding:0.5% 0%;
+        font-size:0.9em;
+    }
 `
 const Col = styled.div`
     display:flex;
@@ -39,6 +48,8 @@ const Logo = styled(motion.svg)`
 const Items = styled.ul`
     display:flex;
     align-items: center;
+    justify-content: space-around;
+    width:30%;
 `
 const Item = styled.li`
     margin-right: 20px;
@@ -49,27 +60,40 @@ const Item = styled.li`
     cursor: pointer;
 `
 const Input = styled(motion.input)`
+/* z-index을 -1을주는바람에 안눌렸다  */
     transform-origin: right center;
     /* 변형의 위치를 지정해줄수있다 scaleX같은 경우에는 중앙부터 좌우로 커지는데 
     변형의 위치를 정해주니 오른쪽 센터부터 늘어난다 . 중요해보임*/
-    position: absolute;
+    position:absolute;
     height:50%;
     border-radius: 5px;
-    width:270px;
-    text-align: center;
-    font-size:1.1em;
-    background-color: rgba(255,255,255,0.3);
-    padding:0.1%;
-    z-index:-1;
+    width:300px;
+    cursor: pointer;
+    border:none;
+    font-size:1.25em;
+    background-color: transparent;
+    padding:0.5%;
+    color:tomato;
+    font-weight: 900;
+    /* color:red; */
     /* 패딩을주고 zindex를 주니 돋보기가 안으로 들어왔다 */
-    padding-left:40px;
+    padding-left:6%;
+    ::placeholder,
+    ::-webkit-input-placeholder{
+        color:rgba(255,255,255,0.5);
+        font-weight: 900;
+    }
+    &:focus{
+        outline: none;
+        border:0.01px solid red;
+    }
 `
 const Circle = styled(motion.div)`
     position: absolute;
     border-radius: 5px;
     bottom:-5px;
-    width:5px;
-    height:5px;
+    width:100%;
+    height:3px;
     left:0;
     right: 0;
     margin:0 auto;
@@ -80,14 +104,17 @@ const SearchIcon = styled(motion.svg)`
     width:17px;
     height:17px;
     fill:'rgba(0,0,0,0.5)';
+    cursor: pointer;
+    margin-right: 5%;
+    z-index:100;
 `
-const Search = styled(motion.div)`
+const Search = styled(motion.form)`
     display:flex;
     align-items: center;
     position: relative;
     width:100%;
+    margin-right: 5%;
     height:100%;
-    cursor: pointer;
     justify-content: flex-end;
     overflow: hidden;
 `
@@ -125,6 +152,7 @@ const navVars ={
     }
 }
 const Nav = () => {
+    const navigate = useNavigate()
     const homeMatch = useLocation().pathname === '/'
     const tvMatch = useLocation().pathname === '/tv'
     const navAnimation = useAnimation()
@@ -135,6 +163,11 @@ const Nav = () => {
     function toggleSearch(){
         setSearchOpen(prev => !prev)
     }
+    const {register,handleSubmit} = useForm<IForm>()
+    const onValid = (data:IForm) => {
+        navigate(`/search?keyword=${data.keyword}`)
+    }
+    const isTv = useMatch('/tv')
     useEffect(()=>{
         /*
         useAnimation Hook의 start,end를 이용해 애니메이션을 연결시킨 엘리먼트의 원하는 애니메이션을 실행해줄수있다.
@@ -157,6 +190,7 @@ const Nav = () => {
             variants={logoVars}
             initial={'normal'}
             whileHover={'active'}
+            onClick={()=>navigate('/')}
             >
                 <motion.path
                 d="M105.06233,14.2806261 L110.999156,30 C109.249227,29.7497422 107.500234,29.4366857 105.718437,29.1554972 L102.374168,20.4686475 L98.9371075,28.4375293 C97.2499766,28.1563408 95.5928391,28.061674 93.9057081,27.8432843 L99.9372012,14.0931671 L94.4680851,-5.68434189e-14 L99.5313525,-5.68434189e-14 L102.593495,7.87421502 L105.874965,-5.68434189e-14 L110.999156,-5.68434189e-14 L105.06233,14.2806261 Z M90.4686475,-5.68434189e-14 L85.8749649,-5.68434189e-14 L85.8749649,27.2499766 C87.3746368,27.3437061 88.9371075,27.4055675 90.4686475,27.5930265 L90.4686475,-5.68434189e-14 Z M81.9055207,26.93692 C77.7186241,26.6557316 73.5307901,26.4064111 69.250164,26.3117443 L69.250164,-5.68434189e-14 L73.9366389,-5.68434189e-14 L73.9366389,21.8745899 C76.6248008,21.9373887 79.3120255,22.1557784 81.9055207,22.2804387 L81.9055207,26.93692 Z M64.2496954,10.6561065 L64.2496954,15.3435186 L57.8442216,15.3435186 L57.8442216,25.9996251 L53.2186709,25.9996251 L53.2186709,-5.68434189e-14 L66.3436123,-5.68434189e-14 L66.3436123,4.68741213 L57.8442216,4.68741213 L57.8442216,10.6561065 L64.2496954,10.6561065 Z M45.3435186,4.68741213 L45.3435186,26.2498828 C43.7810479,26.2498828 42.1876465,26.2498828 40.6561065,26.3117443 L40.6561065,4.68741213 L35.8121661,4.68741213 L35.8121661,-5.68434189e-14 L50.2183897,-5.68434189e-14 L50.2183897,4.68741213 L45.3435186,4.68741213 Z M30.749836,15.5928391 C28.687787,15.5928391 26.2498828,15.5928391 24.4999531,15.6875059 L24.4999531,22.6562939 C27.2499766,22.4678976 30,22.2495079 32.7809542,22.1557784 L32.7809542,26.6557316 L19.812541,27.6876933 L19.812541,-5.68434189e-14 L32.7809542,-5.68434189e-14 L32.7809542,4.68741213 L24.4999531,4.68741213 L24.4999531,10.9991564 C26.3126816,10.9991564 29.0936358,10.9054269 30.749836,10.9054269 L30.749836,15.5928391 Z M4.78114163,12.9684132 L4.78114163,29.3429562 C3.09401069,29.5313525 1.59340144,29.7497422 0,30 L0,-5.68434189e-14 L4.4690224,-5.68434189e-14 L10.562377,17.0315868 L10.562377,-5.68434189e-14 L15.2497891,-5.68434189e-14 L15.2497891,28.061674 C13.5935889,28.3437998 11.906458,28.4375293 10.1246602,28.6868498 L4.78114163,12.9684132 Z">
@@ -164,7 +198,7 @@ const Nav = () => {
             </Logo>
             <Items>
                 <Link to="/">
-                    <Item>HOME{homeMatch && <Circle layoutId='circle'/>} </Item> 
+                    <Item>MOVIE{homeMatch && <Circle layoutId='circle'/>} </Item> 
                 </Link>
                 <Link to="/tv">
                     <Item>TV Shows{tvMatch && <Circle layoutId='circle'/>}</Item>
@@ -172,11 +206,11 @@ const Nav = () => {
             </Items>
             </Col>
             <Col>
-            <Search onClick={toggleSearch}>
+            <Search onSubmit={handleSubmit(onValid)}>
                 <SearchIcon
                 viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                animate={{x:searchOpen? -285 : 0}} transition={{duration:0.5,type:"linear"}}>
-                    {/* 눌린상태면 왼쪽으로 댕김 */}
+                animate={{x:searchOpen? -285 : 0}} transition={{duration:0.5,type:"linear"}}
+                onClick={toggleSearch}>
                 <motion.path
                     d="M500.3 443.7l-119.7-119.7c27.22-40.41 40.65-90.9 33.46-144.7C401.8
                     87.79 326.8 13.32 235.2 1.723C99.01-15.51-15.51 99.01 1.724 235.2c11.6
@@ -187,10 +221,12 @@ const Nav = () => {
                 </SearchIcon>
                 {searchOpen ? 
                 <Input 
+                {...register("keyword",{required:true,minLength:2})}
                 variants={inputVars}
                 initial="close"
                 animate="open"
-                placeholder='Search for movie or Tv show...'/> : null}
+                type="text"
+                placeholder={isTv ? 'Search for Tv Show' : 'Search for Movie'}/> : null}
             </Search>
             </Col>
         </Header>

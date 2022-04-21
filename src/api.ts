@@ -22,6 +22,20 @@ export interface IMovies {
         vote_average: number;
         vote_count: number;
 }
+export interface ITv {
+    backdrop_path: string;
+    genre_ids: number[];
+    id: number;
+    original_language: string;
+    original_name: string;
+    overview: string;
+    popularity: number;
+    poster_path: string;
+    name:string;
+    vote_average: number;
+    vote_count: number;
+}
+
 export interface IGetMovies {
         dates: {
             maximum: string;
@@ -31,6 +45,12 @@ export interface IGetMovies {
         results:IMovies[];
         total_pages: number;
         total_results: number;
+}
+export interface IGetTvShows {
+    page: number;
+    results:ITv[];
+    total_pages: number;
+    total_results: number;
 }
 
 // optional params. 좋은것같다.
@@ -43,19 +63,24 @@ export function makeVideoUrl(platform:string,key:string){
     const VIDEO_URL = platform==='YouTube' ? `https://www.youtube.com/embed/<<key>>`:`https://vimeo.com/<<key>>`
     return VIDEO_URL.replace('<<key>>',key)
 }
-export async function getMovies(state:string){
-    const url = makeUrl('movie',state,'ko-KR')
+export async function getContents(state:string,content:string){
+    const url = makeUrl(content,state,'ko-KR')
     return await(await fetch(url)).json()
 }
 
-export async function getMovieDetail(movieId:number){
-    const GET_MOVIE_URL = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${API_KEY}&append_to_response=videos&language=ko-KR`
+export async function getTvshows(state:string){
+    const url = makeUrl('tv',state,'ko-KR')
+    return await(await fetch(url)).json()
+} 
+
+export async function getContentDetail(movieId:number,content:string){
+    const GET_MOVIE_URL = `https://api.themoviedb.org/3/${content}/${movieId}?api_key=${API_KEY}&append_to_response=videos&language=ko-KR`
     return await(await fetch(GET_MOVIE_URL)).json()
 }
 
 
-export async function getSimilarMovie(movieId:number){
-    const GET_MOVIE_URL = `https://api.themoviedb.org/3/movie/${movieId}/similar?api_key=${API_KEY}&language=ko-KR&page=1`
+export async function getSimilarContents(movieId:number,content:string){
+    const GET_MOVIE_URL = `https://api.themoviedb.org/3/${content}/${movieId}/similar?api_key=${API_KEY}&language=ko-KR&page=1`
     return await(await fetch(GET_MOVIE_URL)).json()
 }
 

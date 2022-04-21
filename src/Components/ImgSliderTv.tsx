@@ -1,10 +1,10 @@
 import React,{useState} from 'react';
-import {ISimilerMovie} from './MovieModal'
 import styled from 'styled-components'
 import {motion,AnimatePresence} from 'framer-motion'
 import {useNavigate,useMatch} from 'react-router-dom'
 import {useQuery} from 'react-query'
 import {IGetMovies,getContents,makeImgUrl, getSimilarContents,IGetTvShows,ITv} from '../api'
+
 interface IProps{
     movie:{
         state:string;
@@ -159,34 +159,28 @@ const rowItemInfoVars={
     }
 }
 
-const ImgSlider = ({movie,title,content}:IProps) => {
+const ImgSliderTv = ({movie,title,content}:IProps) => {
     // content==='tv' ? IGetTvShows : IGetMovies
     const navigate = useNavigate()
     const getContent = useMatch('/tv') ? 'tv' : 'movie'
     //고유키,fetcher함수. 고유키가 배열. obj도 가능하며 좀더 상세한 고유키를 보여줄수있다
     const {isLoading:nowMvLoading,data:nowMvData} 
-    = useQuery<IGetMovies>([`movie-${movie.state}`,`${movie.movieId}`],
-    movie.state==='similer' ? ()=>getSimilarContents(Number(movie.movieId),'movie') : ()=>getContents(movie.state,'movie'))
+    = useQuery<IGetTvShows>([`${content}-${movie.state}`,`${movie.movieId}`],
+    movie.state==='similer' ? ()=>getSimilarContents(Number(movie.movieId),content) : ()=>getContents(movie.state,content))
     const [sliderKey,setSliderKey] = useState(0)
     const [leavingSlider,setLeavingSlide] = useState(false)
     const [sliderIndex,setSliderIndex] = useState(0)
     const [prev,setPrev] = useState(false)
-    const isHome = useMatch('/')
+    const isHome = useMatch('/tv')
     // key가 0일때는 오른쪽에만 0이아닐때는 왼쪽에도
-    const sortedRelease = nowMvData?.results.sort((a,b) => {
-        let x = a.release_date.toLowerCase()
-        let y = b.release_date.toLowerCase()
-        if(x < y) return -1
-        if(x > y) return 1
-        return 0
-    }).reverse()
+
     function sliderKeyUp(){
         if(leavingSlider) return;
         setLeavingSlide(true)
         setSliderKey(prev => prev + 1)
         setPrev(false)
-        if(sortedRelease){
-            setSliderIndex(prev => prev+6 > sortedRelease.length ? 0 : prev+6)
+        if(nowMvData?.results){
+            setSliderIndex(prev => prev+6 > nowMvData?.results.length ? 0 : prev+6)
         }
     }
     function sliderKeyDown(){
@@ -194,16 +188,13 @@ const ImgSlider = ({movie,title,content}:IProps) => {
         setLeavingSlide(true)
         setSliderKey(prev => prev - 1)
         setPrev(true)
-        if(sortedRelease){
+        if(nowMvData?.results){
             setSliderIndex(prev => prev-6)
         }
     }
     function goMovieDetail(movieId:string){
-        if(movie.state === 'similer'){
-            navigate(`/movie/${movieId}/state/${movie.state}`)
-        }else{
-            navigate(`/movie/${movieId}/state/${movie.state}`)
-        }
+        console.log(movieId)
+            navigate(`/tv/${movieId}/state/${movie.state}`)
     }
     return (
         <Slider>
@@ -219,7 +210,7 @@ const ImgSlider = ({movie,title,content}:IProps) => {
                 transition={{duration:1,type:"tween"}}
                 exit='exit'
                 >  
-                    {sortedRelease?.slice(1)
+                    {nowMvData?.results?.slice(1)
                     .slice(sliderIndex,sliderIndex+6)
                     .map((item,index) => 
                         <RowItem 
@@ -233,7 +224,7 @@ const ImgSlider = ({movie,title,content}:IProps) => {
                         >
                             <img src={makeImgUrl(item.poster_path)}/>
                             <RowItemInfo variants={rowItemInfoVars}>
-                                <h4>{item.title}<span>{`(${item.release_date.split('-')[0]}-${item.release_date.split('-')[1]})`}</span></h4>
+                                <h4>{item.name}</h4>
                                 <p>{`★${item.vote_average}`}<span>{`(${item.vote_count})`}</span></p>
                             </RowItemInfo>
                         </RowItem>
@@ -247,4 +238,4 @@ const ImgSlider = ({movie,title,content}:IProps) => {
     );
 };
 
-export default ImgSlider;
+export default ImgSliderTv;

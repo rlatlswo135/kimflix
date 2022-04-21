@@ -5,12 +5,32 @@ import {useQuery} from 'react-query'
 import { getContentDetail } from '../api';
 import {makeImgUrl,makeVideoUrl} from '../api'
 import {useParams,useNavigate,useMatch} from 'react-router-dom'
-import ImgSlider from './ImgSlider'
+import ImgSliderTv from './ImgSliderTv';
 import ReactLoading from 'react-loading'
+
 interface Genre {
+    id: number;
+    name: string;
+}
+interface LastEpisodeToAir {
+        air_date: string;
+        episode_number: number;
         id: number;
         name: string;
+        overview: string;
+        production_code: string;
+        season_number: number;
+        still_path: string;
+        vote_average: number;
+        vote_count: number;
+}
+interface Network {
+        name: string;
+        id: number;
+        logo_path: string;
+        origin_country: string;
     }
+
 interface ProductionCompany {
         id: number;
         logo_path: string;
@@ -18,54 +38,63 @@ interface ProductionCompany {
         origin_country: string;
     }
 
+
+interface Season {
+        air_date: string;
+        episode_count: number;
+        id: number;
+        name: string;
+        overview: string;
+        poster_path: string;
+        season_number: number;
+    }
+
 interface Result {
+        iso_639_1: string;
+        iso_3166_1: string;
         name: string;
         key: string;
         site: string;
         size: number;
         type: string;
         official: boolean;
+        published_at: Date;
         id: string;
     }
 
 interface Videos {
-    results: Result[];
-}
+        results: Result[];
+    }
 
-interface IMovieDetail {
+interface ITvDetail {
         adult: boolean;
         backdrop_path: string;
+        episode_run_time: number[];
+        first_air_date: string;
         genres: Genre[];
+        homepage: string;
         id: number;
-        original_title: string;
+        in_production: boolean;
+        languages: string[];
+        last_air_date: string;
+        last_episode_to_air: LastEpisodeToAir;
+        name: string;
+        next_episode_to_air?: any;
+        networks: Network[];
+        number_of_episodes: number;
+        number_of_seasons: number;
+        origin_country: string[];
+        original_language: string;
+        original_name: string;
         overview: string;
         popularity: number;
         poster_path: string;
         production_companies: ProductionCompany[];
-        release_date: string;
-        runtime: number;
-        status: string;
-        tagline: string;
-        title?: string;
+        seasons: Season[];
         vote_average: number;
         vote_count: number;
         videos: Videos;
     }
-
-
-export interface ISimilerMovie{
-    page:number;
-    results:{
-        backdrop_path: string;
-        id: number;
-        title?: string;
-        vote_average: number;
-        vote_count: number;
-        release_date: string;
-        poster_path: string;
-        original_title: string;
-    }[]
-}
 const Container = styled(motion.div)<{bgphoto:string}>`
     height:100%;
     padding:5% 5%;
@@ -236,20 +265,20 @@ interface IProps{
     content:string;
     movieId?:number
 }
-const MovieModal = (props:IProps) => {
+const TvModal = (props:IProps) => {
     const navigate = useNavigate()
     const movieId=useParams().id
     const state = useParams().stateId
     const getContent = useMatch('/tv/:id/state/:stateId') ? 'tv' : 'movie'
     const [loading,setLoading] = useState(false)
-    const {isLoading,data:movieDetail} = useQuery<IMovieDetail>(['movieDetail',movieId],()=>getContentDetail(Number(movieId),getContent))
+    const {isLoading,data:movieDetail} = useQuery<ITvDetail>(['movieDetail',movieId],()=>getContentDetail(Number(movieId),getContent))
     const {site:platForm,key:videoKey} = movieDetail?.videos?.results.length ? movieDetail?.videos.results[0] : {site:"",key:""}
     useEffect(()=>{
         setTimeout(()=>setLoading(true),500)
     },[])
     return (
         <>
-            <ModalWrap animate={{opacity:1}} exit={{opacity:0}} onClick={()=>navigate('/')}>
+            <ModalWrap animate={{opacity:1}} exit={{opacity:0}} onClick={()=>navigate('/tv')}>
                 {/* 이벤트 버블링을 막아야한다. */}
             <RowItemClick
             variants={rowItemInfoClickVars}
@@ -259,7 +288,7 @@ const MovieModal = (props:IProps) => {
             // 이벤트 버블링 방지. Wrap바깥부분을 클릭해야지 빠져나옴
             onClick={(e)=>{e.stopPropagation()}}
             >
-                <Exit onClick={()=>navigate('/')}>X</Exit>
+                <Exit onClick={()=>navigate('/tv')}>X</Exit>
             <AnimatePresence>
                 <Container bgphoto={makeImgUrl(movieDetail?.backdrop_path||"",'w1280')}>
                     {
@@ -267,8 +296,8 @@ const MovieModal = (props:IProps) => {
                         loading?
                         <>
                         <Title initial={{y:-100,opacity:0}} animate={{y:0,opacity:1}} transition={{type:"tween",duration:1}}>
-                        <h1>{movieDetail?.title}</h1>
-                        <h4>{`${movieDetail?.original_title}`}</h4>
+                        <h1>{movieDetail?.name}</h1>
+                        <h4>{`${movieDetail?.original_name}`}</h4>
                     </Title>
                     <TextContent initial={{y:-100,opacity:0}} animate={{y:0,opacity:1}} transition={{type:"tween",duration:1,delay:0.6}}>
                         <InfoWrap>
@@ -281,7 +310,7 @@ const MovieModal = (props:IProps) => {
                                     }
                                 </Creator>
                                 <ContentInfo>
-                                    <div>{movieDetail?.release_date.split('-')[0]}</div>
+                                    <div>{movieDetail?.first_air_date.split('-')[0]}</div>
                                     {movieDetail?.adult ? <div style={{border:'1px solid red'}}>{"청불"}</div> : null}
                                     {movieDetail?.genres.map((item,index) => <div key={`genres-${index}`}>{item.name}</div>)}
                                     <div>{`★${movieDetail?.vote_average}`}<span>{`(${movieDetail?.vote_count})`}</span></div>
@@ -301,7 +330,7 @@ const MovieModal = (props:IProps) => {
                             </ContentVideo>
                             :
                             <SimilerContent>
-                                <ImgSlider movie={{state:'similer',movieId}} content={getContent} title={'비슷한 컨텐츠'}/>
+                                <ImgSliderTv movie={{state:'similer',movieId}} content={getContent} title={'비슷한 컨텐츠'}/>
                             </SimilerContent>
                         }
                     </TextContent>
@@ -319,7 +348,7 @@ const MovieModal = (props:IProps) => {
     );
 };
 
-export default MovieModal;
+export default TvModal;
 
 /*
                 {movieDetail?.production_companies.map((item,index) => 

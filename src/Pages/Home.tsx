@@ -1,8 +1,8 @@
-import React,{useState} from 'react';
+import React,{useState,memo} from 'react';
 import Nav from '../Components/Nav';
 import styled from 'styled-components';
 import { useQuery } from 'react-query'
-import {getMovies} from '../api'
+import {getContents} from '../api'
 import { IGetMovies } from '../api';
 import { makeImgUrl } from '../api';
 import { motion,AnimatePresence } from 'framer-motion';
@@ -13,7 +13,6 @@ import ImgSlider from '../Components/ImgSlider';
 
 const Container = styled(motion.div)`
     height:100vh;
-    transform-origin:center center;
 `
 const Loader = styled.div`
     height:20vh;
@@ -21,18 +20,18 @@ const Loader = styled.div`
     justify-content: center;
     align-items: center;
 `
-const Banner = styled.div<{bgPhoto:string}>`
+const Banner = styled.div<{bgphoto:string}>`
     height:100vh;
     display:flex;
     flex-direction: column;
     justify-content: center;
     /* 오늘의 배움 백그라운드 이미지를 쌓을수있다는거 mdn공식문서에도 있음 이건 이미지 위에 검정색 투명이미지를 쌓아서 이미지를 어둡게하는느낌 */
-    background-image: linear-gradient(rgba(0,0,0,0),rgba(0,0,0,0.6)),url(${props => props.bgPhoto});
+    background-image: linear-gradient(rgba(0,0,0,0),rgba(0,0,0,0.6)),url(${props => props.bgphoto});
     padding:0% 4%;
     background-size: cover;
 `
 const Title = styled.h2`
-    font-size:5em;
+    font-size:10em;
     margin-bottom: 3%;
 `
 const OverView = styled.p`
@@ -43,61 +42,57 @@ const OverView = styled.p`
 const SliderBox = styled.div`
     position: relative;
     top:-25%;
-    height:100vh;
-    border:1px solid red;
     /*이부분에 postion rel을 준게 원인이었다. 하위컴포넌트가 다 rel이 먹었으니까 */
 `
+const Slider = styled.div`
+    margin-bottom: 3%;
+`
 const Home = () => {
-    const isMovieRoute = useMatch('/movie:id')
+    const isMovieRoute = useMatch('/movie/:id/state/:stateId')
     //고유키,fetcher함수. 고유키가 배열. obj도 가능하며 좀더 상세한 고유키를 보여줄수있다
-    const {isLoading:nowMvLoading,data:nowMvData} = useQuery<IGetMovies>(['movies','nowPlaying'],()=>getMovies('now_playing'))
+    const [layoutId,setLayoutId] = useState('')
+    const {isLoading:nowMvLoading,data:nowMvData} = useQuery<IGetMovies>(['movies','nowPlaying'],()=>getContents('now_playing','movie'))
     const sortedRelease = nowMvData?.results.sort((a,b) => {
-        let x = a.release_date.toLowerCase()
-        let y = b.release_date.toLowerCase()
-        if(x < y) return -1
-        if(x > y) return 1
+        let x = a.release_date?.toLowerCase()
+        let y = b.release_date?.toLowerCase()
+        if(x && y){
+            if(x < y) return -1
+            if(x > y) return 1
+        }
         return 0
     }).reverse()
-
     //현재 상영중인 영화를 최신순으로 정렬
     return (
-        <Container initial={{opacity:0,scale:0}} animate={{opacity:1,scale:1}} transition={{duration:2}}>
-            {nowMvLoading ? 
-            <Loader>Loading...</Loader> :
-            <>
-            <Banner bgPhoto={makeImgUrl(sortedRelease? sortedRelease[0].backdrop_path : "")}>
-                <Title>{sortedRelease ? sortedRelease[0].title : null}</Title>
-                <OverView>{sortedRelease ? sortedRelease[0].overview : null}</OverView>
-            </Banner>
-            <SliderBox>
-                <div>
-                    aa
-                    <ImgSlider movie={{state:'now_playing'}} title={'현재 상영중'}/>
-                </div>
-                <div>
-                    aa
-                    {/* <ImgSlider movie={{state:'now_playing'}} title={'현재 상영중'}/> */}
-                </div>
-            </SliderBox>
-                {/* <AnimatePresence>
-                {
-                    isMovieRoute?
-                        <ModalWrap animate={{opacity:1}} exit={{opacity:0}} onClick={()=>navigate('/')}>
-                            <RowItemClick
-                            variants={rowItemInfoClickVars}
-                            animate="click"
-                            layoutId={layoutId}
-                            exit="exit"
-                            >
-                                <MovieModal movieId={Number(layoutId)}/>
-                            </RowItemClick>
-                        </ModalWrap>
-                    :null                    
+            <Container initial={{opacity:0,y:-window.innerHeight}} animate={{opacity:1,y:0}} transition={{duration:0.5,type:"tween"}}>
+                {nowMvLoading ? 
+                <Loader>Loading...</Loader> :
+                <>
+                <Banner bgphoto={makeImgUrl(sortedRelease? sortedRelease[0].backdrop_path : "")}>
+                    <Title>{sortedRelease ? sortedRelease[0].title : null}</Title>
+                    <OverView>{sortedRelease ? sortedRelease[0].overview : null}</OverView>
+                </Banner>
+                <SliderBox>
+                    <Slider>
+                        <ImgSlider movie={{state:'now_playing'}} content={'movie'} title={'현재 상영중'}/>
+                    </Slider>
+                    <Slider>
+                        <ImgSlider movie={{state:'upcoming'}} content={'movie'} title={'기대되는 영화 곧 출시!'}/>
+                    </Slider>
+                    <Slider>
+                        <ImgSlider movie={{state:'top_rated'}} content={'movie'} title={'평점 높은 영화'}/>
+                    </Slider>
+                    <Slider>
+                        <ImgSlider movie={{state:'popular'}} content={'movie'} title={'대중의 Pick! 인기있는 영화'}/>
+                    </Slider>
+                </SliderBox>
+                    <AnimatePresence>
+                    {
+                        isMovieRoute?<MovieModal content={'movie'}/>:null                    
+                    }
+                    </AnimatePresence>
+                </>
                 }
-                </AnimatePresence> */}
-            </>
-            }
-        </Container>
+            </Container>
     );
 };
 
@@ -122,4 +117,5 @@ export default Home;
                             initial을 써야겠지. */}
 
                 {/* 항상 AnimatePresence는 visible하게. */}
+
 
