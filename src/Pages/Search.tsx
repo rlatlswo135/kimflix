@@ -11,7 +11,7 @@ import { red } from 'colors';
 import ImgSlider from '../Components/ImgSlider';
 import ImgSliderTv from '../Components/ImgSliderTv';
 import TvModal from '../Components/TvModal';
-
+import {Helmet} from 'react-helmet'
 interface IGetSearch{
     page:number;
     results:{
@@ -81,6 +81,9 @@ const Search = () => {
     return (
         <AnimatePresence>
             <Container initial={{opacity:0,y:-window.innerHeight}} animate={{opacity:1,y:0}} exit={{opacity:0,x:window.innerWidth}} transition={{duration:0.5,type:"tween"}}>
+            <Helmet>
+                <title>KimFlix | Search</title>
+            </Helmet>
                 {isLoading? <Loader>Loading...</Loader>:
                 <>
                     <Banner bgphoto={makeImgUrl(data?.results[0].backdrop_path||"")}>

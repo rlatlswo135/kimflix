@@ -138,7 +138,7 @@ const ContentInfo = styled.div`
     padding-top:1%;
     padding-left:1%;
     div{
-        font-size:1.4em;
+        font-size:1.6em;
         color:rgba(255,255,255,0.7);
         font-weight: 500;
         height:15px;
@@ -173,6 +173,7 @@ const OverView = styled.div`
     font-size:1.3em;
     font-weight: 600;
     letter-spacing: 0.1em;
+    padding-bottom: 1%;
     @media screen and (max-width:1680px){
         font-size:1.15em;
     }

@@ -17,6 +17,7 @@ const GlobalStyle = createGlobalStyle`
   body{
     background-color: ${props => props.theme.black.darker};
     overflow-x:hidden ;
+    -ms-overflow-style: none
   }
   div{
     box-sizing: border-box;
@@ -29,6 +30,7 @@ const GlobalStyle = createGlobalStyle`
     background-color: transparent;
     color:white;
   }
+  ::-webkit-scrollbar { display: none; }
 `
 // API KEY =  "63a1eea84b460423d5a4822139eb4def"
 const client = new QueryClient()
@@ -38,7 +40,7 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={client}>
-      <BrowserRouter>
+      <BrowserRouter basename={process.env.PUBLIC_URL}>
       <ThemeProvider theme={theme}>
       <GlobalStyle/>
       <App />

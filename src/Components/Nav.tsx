@@ -4,6 +4,7 @@ import {Link,useLocation,useNavigate} from 'react-router-dom'
 import {motion,useAnimation,useViewportScroll,useMotionValue, useTransform} from 'framer-motion'
 import {useForm} from 'react-hook-form'
 import {useMatch} from 'react-router-dom'
+import {Helmet} from 'react-helmet'
 
 interface IForm{
     keyword:string
@@ -67,11 +68,12 @@ const Input = styled(motion.input)`
     position:absolute;
     height:50%;
     border-radius: 5px;
-    width:300px;
+    width:400px;
     cursor: pointer;
     border:none;
-    font-size:1.25em;
+    font-size:1.2em;
     background-color: transparent;
+    text-align: center;
     padding:0.5%;
     color:tomato;
     font-weight: 900;
@@ -88,6 +90,21 @@ const Input = styled(motion.input)`
         border:0.01px solid red;
     }
 `
+const ErrorMsg = styled(motion.div)`
+    position: absolute;
+    font-size:1.1em;
+    padding:1%;
+    color:rgba(255,0,0,0.9);
+    left:25%;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    @media screen and (max-width:1850px){
+        left:15%;
+    }
+    @media screen and (max-width:1680px){
+        left:5%;
+    }
+`
 const Circle = styled(motion.div)`
     position: absolute;
     border-radius: 5px;
@@ -100,12 +117,12 @@ const Circle = styled(motion.div)`
     /* absolute를 가운데 정렬하는 팁 left,right 0 margin 0 auto */
     background-color: ${props => props.theme.red};
 `
-const SearchIcon = styled(motion.svg)`
+const SearchIcon = styled(motion.svg)<{open:boolean}>`
     width:17px;
     height:17px;
     fill:'rgba(0,0,0,0.5)';
     cursor: pointer;
-    margin-right: 5%;
+    margin-right: ${props => props.open ? '140px' : null};
     z-index:100;
 `
 const Search = styled(motion.form)`
@@ -117,6 +134,9 @@ const Search = styled(motion.form)`
     height:100%;
     justify-content: flex-end;
     overflow: hidden;
+    @media screen and (max-width:1680px){
+        margin-right: 5%;
+    }
 `
 const logoVars = {
     normal:{
@@ -158,14 +178,15 @@ const Nav = () => {
     const navAnimation = useAnimation()
     const bg = useMotionValue(0)
     // 해당 컴포넌트의 프롭스가 아니라 다른곳에서 실행 가능하게 해준다
+    const {register,handleSubmit,formState:{errors},setError} = useForm<IForm>()
     const {scrollY} = useViewportScroll()
     const [searchOpen,setSearchOpen] = useState(false)
     function toggleSearch(){
         setSearchOpen(prev => !prev)
+        setError('keyword',{message:''})
     }
     const isTv = useMatch('/tv')
-    const {register,handleSubmit} = useForm<IForm>()
-    const onValid = (data:IForm) => {
+    const success = (data:IForm) => {
         setSearchOpen(false)
         navigate(`/search?keyword=${data.keyword}&content=${isTv ? 'tv' : 'movie'}`)
     }
@@ -185,6 +206,9 @@ const Nav = () => {
     },[])
     return (
         <Header variants={navVars} initial='start' animate={navAnimation}>
+            <Helmet>
+                <title>KimFlix | Tv</title>
+            </Helmet>
             <Col>
             <Logo
             viewBox='0 0 111 30'
@@ -207,9 +231,13 @@ const Nav = () => {
             </Items>
             </Col>
             <Col>
-            <Search onSubmit={handleSubmit(onValid)}>
+            <Search onSubmit={handleSubmit(success)}>
+                <ErrorMsg>{errors?.keyword?.message}</ErrorMsg>
                 <SearchIcon
+                // -285
+                open={searchOpen}
                 viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                initial={{x:285}}
                 animate={{x:searchOpen? -285 : 0}} transition={{duration:0.5,type:"linear"}}
                 onClick={toggleSearch}>
                 <motion.path
@@ -222,7 +250,7 @@ const Nav = () => {
                 </SearchIcon>
                 {searchOpen ? 
                 <Input 
-                {...register("keyword",{required:true,minLength:2})}
+                {...register("keyword",{required:"1글자 이상 입력해주세요."})}
                 variants={inputVars}
                 initial="close"
                 animate="open"

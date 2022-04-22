@@ -1,5 +1,4 @@
 import React,{useState,memo} from 'react';
-import Nav from '../Components/Nav';
 import styled from 'styled-components';
 import { useQuery } from 'react-query'
 import {getContents} from '../api'
@@ -8,9 +7,9 @@ import { makeImgUrl } from '../api';
 import { motion,AnimatePresence } from 'framer-motion';
 import {useNavigate,useMatch,useParams} from 'react-router-dom'
 import MovieModal from '../Components/MovieModal';
-import { red } from 'colors';
 import ImgSlider from '../Components/ImgSlider';
 import {movie} from '../data'
+import {Helmet} from 'react-helmet'
 
 const Container = styled(motion.div)`
     height:100vh;
@@ -64,6 +63,9 @@ const Home = () => {
     //현재 상영중인 영화를 최신순으로 정렬
     return (
             <Container initial={{opacity:0,y:-window.innerHeight}} animate={{opacity:1,y:0}} transition={{duration:0.5,type:"tween"}}>
+                <Helmet>
+                    <title>KimFlix | Movie</title>
+                </Helmet>
                 {
                 nowMvLoading ? 
                 <Loader>Loading...</Loader> :

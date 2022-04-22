@@ -109,7 +109,7 @@ const ContentInfo = styled.div`
     padding-top:1%;
     padding-left:1%;
     div{
-        font-size:1.4em;
+        font-size:1.6em;
         color:rgba(255,255,255,0.7);
         font-weight: 500;
         height:15px;
@@ -144,6 +144,7 @@ const OverView = styled.div`
     font-size:1.3em;
     font-weight: 600;
     letter-spacing: 0.1em;
+    padding-bottom: 1%;
     @media screen and (max-width:1680px){
         font-size:1.15em;
     }
@@ -285,6 +286,7 @@ const MovieModal = (props:IProps) => {
                                     <div>{movieDetail?.release_date.split('-')[0]}</div>
                                     {movieDetail?.adult ? <div style={{border:'1px solid red'}}>{"청불"}</div> : null}
                                     {movieDetail?.genres.map((item,index) => <div key={`genres-${index}`}>{item.name}</div>)}
+                                    <div style={{fontWeight:900}}>{`${movieDetail?.runtime}분`}</div>
                                     <div>{`★${movieDetail?.vote_average}`}<span>{`(${movieDetail?.vote_count})`}</span></div>
                                 </ContentInfo>
                             </ContentInfoWrap>
