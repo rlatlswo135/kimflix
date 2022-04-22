@@ -4,7 +4,7 @@ import { motion,AnimatePresence } from 'framer-motion';
 import {useQuery} from 'react-query'
 import { getContentDetail } from '../api';
 import {makeImgUrl,makeVideoUrl} from '../api'
-import {useParams,useNavigate,useMatch} from 'react-router-dom'
+import {useParams,useNavigate,useMatch,useLocation} from 'react-router-dom'
 import ImgSlider from './ImgSlider'
 import ReactLoading from 'react-loading'
 interface Genre {
@@ -238,9 +238,10 @@ interface IProps{
 }
 const MovieModal = (props:IProps) => {
     const navigate = useNavigate()
-    const movieId=useParams().id
-    const state = useParams().stateId
-    const getContent = useMatch('/tv/:id/state/:stateId') ? 'tv' : 'movie'
+    const location = useLocation()
+    const movieId = new URLSearchParams(location.search).get('movieId') || new URLSearchParams(location.search).get('searchId')
+    const state = new URLSearchParams(location.search).get('state')
+    const getContent = 'movie'
     const [loading,setLoading] = useState(false)
     const {isLoading,data:movieDetail} = useQuery<IMovieDetail>(['movieDetail',movieId],()=>getContentDetail(Number(movieId),getContent))
     const {site:platForm,key:videoKey} = movieDetail?.videos?.results.length ? movieDetail?.videos.results[0] : {site:"",key:""}
@@ -249,7 +250,7 @@ const MovieModal = (props:IProps) => {
     },[])
     return (
         <>
-            <ModalWrap animate={{opacity:1}} exit={{opacity:0}} onClick={()=>navigate('/')}>
+            <ModalWrap animate={{opacity:1}} exit={{opacity:0}} onClick={()=>navigate(-1)}>
                 {/* 이벤트 버블링을 막아야한다. */}
             <RowItemClick
             variants={rowItemInfoClickVars}
@@ -259,7 +260,7 @@ const MovieModal = (props:IProps) => {
             // 이벤트 버블링 방지. Wrap바깥부분을 클릭해야지 빠져나옴
             onClick={(e)=>{e.stopPropagation()}}
             >
-                <Exit onClick={()=>navigate('/')}>X</Exit>
+                <Exit onClick={()=>navigate(-1)}>X</Exit>
             <AnimatePresence>
                 <Container bgphoto={makeImgUrl(movieDetail?.backdrop_path||"",'w1280')}>
                     {
@@ -291,7 +292,7 @@ const MovieModal = (props:IProps) => {
                         </InfoWrap>
                         {
                             movieDetail?.videos.results.length !== 0 ?
-                            <ContentVideo initial={{opacity:0,y:100}} animate={{opacity:1,y:0}} transition={{delay:1.1,duration:1,type:"tween"}}>
+                            <ContentVideo initial={{opacity:0,y:100}} animate={{opacity:1,y:0}} transition={{delay:0.5,duration:1,type:"tween"}}>
                                 <iframe 
                                 src={makeVideoUrl(platForm,videoKey)}
                                 frameBorder="0"

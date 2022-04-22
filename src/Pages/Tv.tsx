@@ -4,9 +4,10 @@ import { useQuery } from 'react-query'
 import {getContents,getTvshows} from '../api'
 import { makeImgUrl } from '../api';
 import { motion,AnimatePresence } from 'framer-motion';
-import {useNavigate,useMatch,useParams} from 'react-router-dom'
+import {useLocation} from 'react-router-dom'
 import TvModal from '../Components/TvModal';
 import ImgSliderTv from '../Components/ImgSliderTv';
+import {tv} from '../data'
 
 interface IGetTvResults{
     backdrop_path: string
@@ -73,11 +74,9 @@ const Slider = styled.div`
 
 // on_the_air
 const Tv = () => {
-    const navigate = useNavigate()
-    const isTvRoute = useMatch('/tv/:id/state/:stateId')
-    const params = useParams()
+    const location = useLocation()
+    const isTvRoute = location.search;
     //고유키,fetcher함수. 고유키가 배열. obj도 가능하며 좀더 상세한 고유키를 보여줄수있다
-    const [layoutId,setLayoutId] = useState('')
     const {isLoading:nowTvLoading,data:nowTvData} = useQuery<IGetTv>(['tv','nowPlaying'],()=>getTvshows('on_the_air'))
     //현재 상영중인 영화를 최신순으로 정렬
     return (
@@ -91,12 +90,13 @@ const Tv = () => {
                     <OverView>{nowTvData?.results ? nowTvData?.results[0].overview : null}</OverView>
                 </Banner>
                 <SliderBox>
-                    <Slider>
-                        <ImgSliderTv movie={{state:'top_rated'}} content={'tv'} title={'평점 높은 드라마'}/>
-                    </Slider>
-                    <Slider>
-                        <ImgSliderTv movie={{state:'popular'}} content={'tv'} title={'대중의 Pick! 인기있는 드라마'}/>
-                    </Slider>
+                    {
+                        tv.map((item,index) => (
+                            <Slider key={item.title}>
+                                <ImgSliderTv movie={{state:item.state}} title={item.title} />
+                            </Slider>
+                        ))
+                    }
                 </SliderBox>
                     <AnimatePresence>
                     {

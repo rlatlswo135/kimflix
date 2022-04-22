@@ -83,6 +83,10 @@ export async function getSimilarContents(movieId:number,content:string){
     const GET_MOVIE_URL = `https://api.themoviedb.org/3/${content}/${movieId}/similar?api_key=${API_KEY}&language=ko-KR&page=1`
     return await(await fetch(GET_MOVIE_URL)).json()
 }
+export async function getSearchContents(keyword:string){
+    const url = `https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&language=ko-KR&query=${keyword}&page=1&include_adult=false`
+    return await(await fetch(url)).json()
+}
 
 
 /*
@@ -91,4 +95,6 @@ Vimeo: https://vimeo.com/<<key>>
 
 이리로 하면 비디오 + 영화정보까지 나옴
 https://api.themoviedb.org/3/movie/<<movie_id>>?api_key=<<api_key>>&append_to_response=videos&language=ko-KR
+
+https://api.themoviedb.org/3/search/<<movie or tv or person or multi(이걸로하자)>>?api_key=<<api_key>>&language=en-US&query=<<query_string>>&page=1&include_adult=false
 */

@@ -10,6 +10,7 @@ import {useNavigate,useMatch,useParams} from 'react-router-dom'
 import MovieModal from '../Components/MovieModal';
 import { red } from 'colors';
 import ImgSlider from '../Components/ImgSlider';
+import {movie} from '../data'
 
 const Container = styled(motion.div)`
     height:100vh;
@@ -48,9 +49,8 @@ const Slider = styled.div`
     margin-bottom: 3%;
 `
 const Home = () => {
-    const isMovieRoute = useMatch('/movie/:id/state/:stateId')
+    const isMovieRoute = useMatch('/movie')
     //고유키,fetcher함수. 고유키가 배열. obj도 가능하며 좀더 상세한 고유키를 보여줄수있다
-    const [layoutId,setLayoutId] = useState('')
     const {isLoading:nowMvLoading,data:nowMvData} = useQuery<IGetMovies>(['movies','nowPlaying'],()=>getContents('now_playing','movie'))
     const sortedRelease = nowMvData?.results.sort((a,b) => {
         let x = a.release_date?.toLowerCase()
@@ -64,7 +64,8 @@ const Home = () => {
     //현재 상영중인 영화를 최신순으로 정렬
     return (
             <Container initial={{opacity:0,y:-window.innerHeight}} animate={{opacity:1,y:0}} transition={{duration:0.5,type:"tween"}}>
-                {nowMvLoading ? 
+                {
+                nowMvLoading ? 
                 <Loader>Loading...</Loader> :
                 <>
                 <Banner bgphoto={makeImgUrl(sortedRelease? sortedRelease[0].backdrop_path : "")}>
@@ -72,18 +73,13 @@ const Home = () => {
                     <OverView>{sortedRelease ? sortedRelease[0].overview : null}</OverView>
                 </Banner>
                 <SliderBox>
-                    <Slider>
-                        <ImgSlider movie={{state:'now_playing'}} content={'movie'} title={'현재 상영중'}/>
-                    </Slider>
-                    <Slider>
-                        <ImgSlider movie={{state:'upcoming'}} content={'movie'} title={'기대되는 영화 곧 출시!'}/>
-                    </Slider>
-                    <Slider>
-                        <ImgSlider movie={{state:'top_rated'}} content={'movie'} title={'평점 높은 영화'}/>
-                    </Slider>
-                    <Slider>
-                        <ImgSlider movie={{state:'popular'}} content={'movie'} title={'대중의 Pick! 인기있는 영화'}/>
-                    </Slider>
+                    {
+                        movie.map((item,index) => (
+                            <Slider key={item.title}>
+                                <ImgSlider movie={{state:item.state}} title={item.title} />
+                            </Slider>
+                        ))
+                    }
                 </SliderBox>
                     <AnimatePresence>
                     {

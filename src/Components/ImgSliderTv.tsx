@@ -1,7 +1,7 @@
 import React,{useState} from 'react';
 import styled from 'styled-components'
 import {motion,AnimatePresence} from 'framer-motion'
-import {useNavigate,useMatch} from 'react-router-dom'
+import {useNavigate,useMatch,useLocation} from 'react-router-dom'
 import {useQuery} from 'react-query'
 import {IGetMovies,getContents,makeImgUrl, getSimilarContents,IGetTvShows,ITv} from '../api'
 
@@ -9,10 +9,10 @@ interface IProps{
     movie:{
         state:string;
         movieId?:string;
-        // data?:ISimilerMovie
+        data?:any[]
     },
     title:string;
-    content:string;
+    content?:string;
 }
 
 const Slider = styled.div`
@@ -44,7 +44,7 @@ const Next = styled(motion.span)<{state:string}>`
     background-color: rgba(0,0,0,0.5);
     top:0%;
     /* similer때는 leftf를 1 늘려야 */
-    left:${props => props.state ==='similer' ? '97.5%' : '96.5%'} ;
+    left:${props => props.state ==='home' ? '96.5%' : '97.5%'} ;
 `
 const Wrap = styled.div`
     position: relative;
@@ -159,10 +159,11 @@ const rowItemInfoVars={
     }
 }
 
-const ImgSliderTv = ({movie,title,content}:IProps) => {
+const ImgSliderTv = ({movie,title}:IProps) => {
     // content==='tv' ? IGetTvShows : IGetMovies
+    const location = useLocation()
     const navigate = useNavigate()
-    const getContent = useMatch('/tv') ? 'tv' : 'movie'
+    const content = useMatch('/tv') ? 'tv' : 'movie'
     //고유키,fetcher함수. 고유키가 배열. obj도 가능하며 좀더 상세한 고유키를 보여줄수있다
     const {isLoading:nowMvLoading,data:nowMvData} 
     = useQuery<IGetTvShows>([`${content}-${movie.state}`,`${movie.movieId}`],
@@ -171,9 +172,10 @@ const ImgSliderTv = ({movie,title,content}:IProps) => {
     const [leavingSlider,setLeavingSlide] = useState(false)
     const [sliderIndex,setSliderIndex] = useState(0)
     const [prev,setPrev] = useState(false)
-    const isHome = useMatch('/tv')
+    const tvId = new URLSearchParams(location.search).get('tvId') || new URLSearchParams(location.search).get('searchId')
+    const isHome = tvId ? 'similer' : 'home'
     // key가 0일때는 오른쪽에만 0이아닐때는 왼쪽에도
-
+    const tvData = movie.data || nowMvData?.results
     function sliderKeyUp(){
         if(leavingSlider) return;
         setLeavingSlide(true)
@@ -193,8 +195,12 @@ const ImgSliderTv = ({movie,title,content}:IProps) => {
         }
     }
     function goMovieDetail(movieId:string){
-        console.log(movieId)
-            navigate(`/tv/${movieId}/state/${movie.state}`)
+        if(movie.state.includes('search')){
+            let keyword = movie.state.split('-')[1]
+            navigate(`/search?keyword=${keyword}&content=tv&searchId=${movieId}`)
+        }else{
+            navigate(`/tv?tvId=${movieId}&state=${movie.state}`)
+        }
     }
     return (
         <Slider>
@@ -210,8 +216,7 @@ const ImgSliderTv = ({movie,title,content}:IProps) => {
                 transition={{duration:1,type:"tween"}}
                 exit='exit'
                 >  
-                    {nowMvData?.results?.slice(1)
-                    .slice(sliderIndex,sliderIndex+6)
+                    {tvData?.slice(sliderIndex,sliderIndex+6)
                     .map((item,index) => 
                         <RowItem 
                         key={item.id}
@@ -222,15 +227,21 @@ const ImgSliderTv = ({movie,title,content}:IProps) => {
                         onClick={()=>goMovieDetail(`${item.id}`)}
                         layoutId={`${movie.state}-${item.id}`}
                         >
-                            <img src={makeImgUrl(item.poster_path)}/>
-                            <RowItemInfo variants={rowItemInfoVars}>
-                                <h4>{item.name}</h4>
-                                <p>{`★${item.vote_average}`}<span>{`(${item.vote_count})`}</span></p>
-                            </RowItemInfo>
+                            {
+                                item.poster_path ?
+                                <>
+                                <img src={makeImgUrl(item.poster_path)}/>
+                                <RowItemInfo variants={rowItemInfoVars}>
+                                    <h4>{item.name}</h4>
+                                    <p>{`★${item.vote_average}`}<span>{`(${item.vote_count})`}</span></p>
+                                </RowItemInfo>
+                                </>
+                                :null
+                            }
                         </RowItem>
                     )}
                     {sliderIndex?<Prev onClick={sliderKeyDown} initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.1}}>{'<'}</Prev>:null}
-                    <Next state={isHome?'home':'similer'} initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.1}} onClick={sliderKeyUp}>{'>'}</Next>
+                    <Next state={isHome==='home'?'home':'similer'} initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.1}} onClick={sliderKeyUp}>{'>'}</Next>
                 </Row>
             </AnimatePresence>
             </Wrap>

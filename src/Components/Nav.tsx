@@ -163,11 +163,12 @@ const Nav = () => {
     function toggleSearch(){
         setSearchOpen(prev => !prev)
     }
+    const isTv = useMatch('/tv')
     const {register,handleSubmit} = useForm<IForm>()
     const onValid = (data:IForm) => {
-        navigate(`/search?keyword=${data.keyword}`)
+        setSearchOpen(false)
+        navigate(`/search?keyword=${data.keyword}&content=${isTv ? 'tv' : 'movie'}`)
     }
-    const isTv = useMatch('/tv')
     useEffect(()=>{
         /*
         useAnimation Hook의 start,end를 이용해 애니메이션을 연결시킨 엘리먼트의 원하는 애니메이션을 실행해줄수있다.
@@ -226,7 +227,7 @@ const Nav = () => {
                 initial="close"
                 animate="open"
                 type="text"
-                placeholder={isTv ? 'Search for Tv Show' : 'Search for Movie'}/> : null}
+                placeholder={'Search for Content or person'}/> : null}
             </Search>
             </Col>
         </Header>

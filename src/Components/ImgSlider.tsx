@@ -2,17 +2,17 @@ import React,{useState} from 'react';
 import {ISimilerMovie} from './MovieModal'
 import styled from 'styled-components'
 import {motion,AnimatePresence} from 'framer-motion'
-import {useNavigate,useMatch} from 'react-router-dom'
+import {useNavigate,useMatch,useLocation} from 'react-router-dom'
 import {useQuery} from 'react-query'
 import {IGetMovies,getContents,makeImgUrl, getSimilarContents,IGetTvShows,ITv} from '../api'
 interface IProps{
     movie:{
         state:string;
         movieId?:string;
-        // data?:ISimilerMovie
+        data?:any[]
     },
     title:string;
-    content:string;
+    content?:string;
 }
 
 const Slider = styled.div`
@@ -159,10 +159,9 @@ const rowItemInfoVars={
     }
 }
 
-const ImgSlider = ({movie,title,content}:IProps) => {
-    // content==='tv' ? IGetTvShows : IGetMovies
+const ImgSlider = ({movie,title}:IProps) => {
     const navigate = useNavigate()
-    const getContent = useMatch('/tv') ? 'tv' : 'movie'
+    const getContent = 'movie'
     //고유키,fetcher함수. 고유키가 배열. obj도 가능하며 좀더 상세한 고유키를 보여줄수있다
     const {isLoading:nowMvLoading,data:nowMvData} 
     = useQuery<IGetMovies>([`movie-${movie.state}`,`${movie.movieId}`],
@@ -173,13 +172,13 @@ const ImgSlider = ({movie,title,content}:IProps) => {
     const [prev,setPrev] = useState(false)
     const isHome = useMatch('/')
     // key가 0일때는 오른쪽에만 0이아닐때는 왼쪽에도
-    const sortedRelease = nowMvData?.results.sort((a,b) => {
+    const sortedRelease = movie.data ||(nowMvData?.results.sort((a,b) => {
         let x = a.release_date.toLowerCase()
         let y = b.release_date.toLowerCase()
         if(x < y) return -1
         if(x > y) return 1
         return 0
-    }).reverse()
+    }).reverse())
     function sliderKeyUp(){
         if(leavingSlider) return;
         setLeavingSlide(true)
@@ -199,11 +198,12 @@ const ImgSlider = ({movie,title,content}:IProps) => {
         }
     }
     function goMovieDetail(movieId:string){
-        if(movie.state === 'similer'){
-            navigate(`/movie/${movieId}/state/${movie.state}`)
-        }else{
-            navigate(`/movie/${movieId}/state/${movie.state}`)
-        }
+            if(movie.state.includes('search')){
+                let keyword = movie.state.split('-')[1]
+                navigate(`/search?keyword=${keyword}&content=movie&searchId=${movieId}`)
+            }else{
+                navigate(`/movie?movieId=${movieId}&state=${movie.state}`)
+            }
     }
     return (
         <Slider>
@@ -219,8 +219,7 @@ const ImgSlider = ({movie,title,content}:IProps) => {
                 transition={{duration:1,type:"tween"}}
                 exit='exit'
                 >  
-                    {sortedRelease?.slice(1)
-                    .slice(sliderIndex,sliderIndex+6)
+                    {sortedRelease?.slice(sliderIndex,sliderIndex+6)
                     .map((item,index) => 
                         <RowItem 
                         key={item.id}
