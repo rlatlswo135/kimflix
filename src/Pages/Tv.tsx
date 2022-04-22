@@ -55,13 +55,19 @@ const Banner = styled.div<{bgphoto:string}>`
     background-size: cover;
 `
 const Title = styled.h2`
-    font-size:5em;
+    font-size:10em;
     margin-bottom: 3%;
+    @media screen and (max-width:1680px){
+        font-size:8em;
+    }
 `
 const OverView = styled.p`
     font-size:1.5em;
     width:60%;
     letter-spacing: 0.04em;
+    @media screen and (max-width:1680px){
+        font-size:1.25em;
+    }
 `
 const SliderBox = styled.div`
     position: relative;
