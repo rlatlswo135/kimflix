@@ -2,7 +2,7 @@ import React,{useState,memo} from 'react';
 import styled from 'styled-components';
 import { useQuery } from 'react-query'
 import Nav from '../Components/Nav'
-import {getContents} from '../api'
+import {getContents, IMovies} from '../api'
 import { IGetMovies } from '../api';
 import { makeImgUrl } from '../api';
 import { motion,AnimatePresence } from 'framer-motion';
@@ -53,7 +53,8 @@ const Movie = () => {
     const isMovieRoute = location.search
     //고유키,fetcher함수. 고유키가 배열. obj도 가능하며 좀더 상세한 고유키를 보여줄수있다
     const {isLoading:nowMvLoading,data:nowMvData} = useQuery<IGetMovies>(['movies','nowPlaying'],()=>getContents('now_playing','movie'))
-    const sortedRelease = nowMvData?.results.sort((a,b) => {
+    const test = nowMvData? JSON.parse(JSON.stringify(nowMvData)) : null
+    const sortedRelease = test ? test.results.sort((a:IMovies,b:IMovies) => {
         let x = a.release_date?.toLowerCase()
         let y = b.release_date?.toLowerCase()
         if(x && y){
@@ -61,7 +62,7 @@ const Movie = () => {
             if(x > y) return 1
         }
         return 0
-    }).reverse()
+    }).reverse() : null
     //현재 상영중인 영화를 최신순으로 정렬
     return (
             <>
