@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link,useNavigate } from 'react-router-dom';
-import { animate, motion } from 'framer-motion';
+import { animate, motion,AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
-
+import { Helmet } from 'react-helmet';
 const Logo = styled.svg`
     cursor: pointer;
     path{
@@ -38,6 +38,9 @@ const Home = () => {
 
     return (
         <Container>
+            <Helmet>
+                <title>Kimflix</title>
+            </Helmet>
         <Logo viewBox='0 0 111 30' onClick={()=>navigate('/movie')}>
             <motion.path
                 variants={svgVars}

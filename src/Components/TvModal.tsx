@@ -269,18 +269,27 @@ interface IProps{
 const TvModal = (props:IProps) => {
     const location = useLocation();
     const navigate = useNavigate()
+    const isSearch = useMatch('/search')
     const movieId=new URLSearchParams(location.search).get('tvId') || new URLSearchParams(location.search).get('searchId')
     const state = new URLSearchParams(location.search).get('state')
     const getContent = 'tv'
     const [loading,setLoading] = useState(false)
     const {isLoading,data:movieDetail} = useQuery<ITvDetail>(['movieDetail',movieId],()=>getContentDetail(Number(movieId),getContent))
     const {site:platForm,key:videoKey} = movieDetail?.videos?.results.length ? movieDetail?.videos.results[0] : {site:"",key:""}
+    function exitClick(){
+        if(isSearch){
+            const keyword = new URLSearchParams(location.search).get('keyword')
+            navigate(`/search?keyword=${keyword}&content='tv`)
+        }else{
+            navigate('/tv')
+        }
+    }
     useEffect(()=>{
         setTimeout(()=>setLoading(true),500)
     },[])
     return (
         <>
-            <ModalWrap animate={{opacity:1}} exit={{opacity:0}} onClick={()=>navigate(-1)}>
+            <ModalWrap animate={{opacity:1}} exit={{opacity:0}} onClick={()=>exitClick()}>
             <RowItemClick
             variants={rowItemInfoClickVars}
             animate="click"
@@ -289,7 +298,7 @@ const TvModal = (props:IProps) => {
             // 이벤트 버블링 방지. Wrap바깥부분을 클릭해야지 빠져나옴
             onClick={(e)=>{e.stopPropagation()}}
             >
-                <Exit onClick={()=>navigate(-1)}>X</Exit>
+                <Exit onClick={()=>exitClick()}>X</Exit>
             <AnimatePresence>
                 <Container bgphoto={makeImgUrl(movieDetail?.backdrop_path||"",'w1280')}>
                     {
@@ -311,7 +320,7 @@ const TvModal = (props:IProps) => {
                                     }
                                 </Creator>
                                 <ContentInfo>
-                                    <div>{movieDetail?.first_air_date.split('-')[0]}</div>
+                                    <div>{movieDetail?.first_air_date ? movieDetail?.first_air_date.split('-')[0]:null}</div>
                                     {movieDetail?.adult ? <div style={{border:'1px solid red'}}>{"청불"}</div> : null}
                                     {movieDetail?.genres.map((item,index) => <div key={`genres-${index}`}>{item.name}</div>)}
                                     <div>{`★${movieDetail?.vote_average}`}<span>{`(${movieDetail?.vote_count})`}</span></div>

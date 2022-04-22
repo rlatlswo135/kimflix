@@ -240,18 +240,27 @@ interface IProps{
 const MovieModal = (props:IProps) => {
     const navigate = useNavigate()
     const location = useLocation()
+    const isSearch = useMatch('/search')
     const movieId = new URLSearchParams(location.search).get('movieId') || new URLSearchParams(location.search).get('searchId')
     const state = new URLSearchParams(location.search).get('state')
     const getContent = 'movie'
     const [loading,setLoading] = useState(false)
     const {isLoading,data:movieDetail} = useQuery<IMovieDetail>(['movieDetail',movieId],()=>getContentDetail(Number(movieId),getContent))
     const {site:platForm,key:videoKey} = movieDetail?.videos?.results.length ? movieDetail?.videos.results[0] : {site:"",key:""}
+    function exitClick(){
+        if(isSearch){
+            const keyword = new URLSearchParams(location.search).get('keyword')
+            navigate(`/search?keyword=${keyword}&content='movie`)
+        }else{
+            navigate('/movie')
+        }
+    }
     useEffect(()=>{
         setTimeout(()=>setLoading(true),500)
     },[])
     return (
         <>
-            <ModalWrap animate={{opacity:1}} exit={{opacity:0}} onClick={()=>navigate(-1)}>
+            <ModalWrap animate={{opacity:1}} exit={{opacity:0}} onClick={()=>exitClick()}>
                 {/* 이벤트 버블링을 막아야한다. */}
             <RowItemClick
             variants={rowItemInfoClickVars}
@@ -261,7 +270,7 @@ const MovieModal = (props:IProps) => {
             // 이벤트 버블링 방지. Wrap바깥부분을 클릭해야지 빠져나옴
             onClick={(e)=>{e.stopPropagation()}}
             >
-                <Exit onClick={()=>navigate(-1)}>X</Exit>
+                <Exit onClick={()=>exitClick()}>X</Exit>
             <AnimatePresence>
                 <Container bgphoto={makeImgUrl(movieDetail?.backdrop_path||"",'w1280')}>
                     {

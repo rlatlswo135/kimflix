@@ -161,13 +161,14 @@ const rowItemInfoVars={
 
 const ImgSliderTv = ({movie,title}:IProps) => {
     // content==='tv' ? IGetTvShows : IGetMovies
+    const isSearch = useMatch('/search')
     const location = useLocation()
     const navigate = useNavigate()
     const content = useMatch('/tv') ? 'tv' : 'movie'
     //고유키,fetcher함수. 고유키가 배열. obj도 가능하며 좀더 상세한 고유키를 보여줄수있다
     const {isLoading:nowMvLoading,data:nowMvData} 
     = useQuery<IGetTvShows>([`${content}-${movie.state}`,`${movie.movieId}`],
-    movie.state==='similer' ? ()=>getSimilarContents(Number(movie.movieId),content) : ()=>getContents(movie.state,content))
+    movie.state==='similer' ? ()=>getSimilarContents(Number(movie.movieId),'tv') : ()=>getContents(movie.state,'tv'))
     const [sliderKey,setSliderKey] = useState(0)
     const [leavingSlider,setLeavingSlide] = useState(false)
     const [sliderIndex,setSliderIndex] = useState(0)
@@ -181,8 +182,8 @@ const ImgSliderTv = ({movie,title}:IProps) => {
         setLeavingSlide(true)
         setSliderKey(prev => prev + 1)
         setPrev(false)
-        if(nowMvData?.results){
-            setSliderIndex(prev => prev+6 > nowMvData?.results.length ? 0 : prev+6)
+        if(tvData){
+            setSliderIndex(prev => prev+6 > tvData.length ? 0 : prev+6)
         }
     }
     function sliderKeyDown(){
@@ -195,8 +196,12 @@ const ImgSliderTv = ({movie,title}:IProps) => {
         }
     }
     function goMovieDetail(movieId:string){
+        
         if(movie.state.includes('search')){
             let keyword = movie.state.split('-')[1]
+            navigate(`/search?keyword=${keyword}&content=tv&searchId=${movieId}`)
+        }else if(isSearch){
+            let keyword = new URLSearchParams(location.search).get('keyword')
             navigate(`/search?keyword=${keyword}&content=tv&searchId=${movieId}`)
         }else{
             navigate(`/tv?tvId=${movieId}&state=${movie.state}`)
@@ -228,15 +233,13 @@ const ImgSliderTv = ({movie,title}:IProps) => {
                         layoutId={`${movie.state}-${item.id}`}
                         >
                             {
-                                item.poster_path ?
                                 <>
-                                <img src={makeImgUrl(item.poster_path)}/>
+                                <img src={makeImgUrl(item.poster_path||item.backdrop_path)}/>
                                 <RowItemInfo variants={rowItemInfoVars}>
                                     <h4>{item.name}</h4>
                                     <p>{`★${item.vote_average}`}<span>{`(${item.vote_count})`}</span></p>
                                 </RowItemInfo>
                                 </>
-                                :null
                             }
                         </RowItem>
                     )}

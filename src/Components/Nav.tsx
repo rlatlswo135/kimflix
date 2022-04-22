@@ -197,7 +197,7 @@ const Nav = () => {
         => variants와 묶어서도 연계가능하다. 왜 animate가 variant에 묶여있으니까
         */
         scrollY.onChange(()=>{
-            if(scrollY.get() > 30){
+            if(scrollY.get() > 20){
                 navAnimation.start('scroll')
             }else{
                 navAnimation.start('start')

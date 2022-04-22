@@ -61,6 +61,7 @@ const OverView = styled.p`
 `
 const SliderBox = styled.div`
     position: relative;
+    height:100vh;
     top:-25%;
     /*이부분에 postion rel을 준게 원인이었다. 하위컴포넌트가 다 rel이 먹었으니까 */
 `
@@ -77,8 +78,12 @@ const Search = () => {
     const {isLoading,data} = useQuery<IGetSearch>(['search',keyword],()=>getSearchContents(keyword||''))
     const movieArray = data ? data.results.filter(item => item.media_type === 'movie') : null
     const tvArray = data ? data.results.filter(item => item.media_type === 'tv') : null
+    console.log(tvArray)
+    console.log(movieArray)
     //현재 상영중인 영화를 최신순으로 정렬
     return (
+        <>
+        <Nav />
         <AnimatePresence>
             <Container initial={{opacity:0,y:-window.innerHeight}} animate={{opacity:1,y:0}} exit={{opacity:0,x:window.innerWidth}} transition={{duration:0.5,type:"tween"}}>
             <Helmet>
@@ -91,12 +96,18 @@ const Search = () => {
                         <OverView>{data?.results[0].overview}</OverView>
                     </Banner>
                     <SliderBox>
-                        <Slider>
-                            <ImgSlider movie={{state:`search-${keyword}`,data:movieArray||[]}} title={`${keyword}로 검색한 영화`} />
-                        </Slider>
-                        <Slider>
-                            <ImgSliderTv movie={{state:`search-${keyword}`,data:tvArray||[]}} title={`${keyword}로 검색한 TV컨텐츠`} />
-                        </Slider>
+                        {
+                            movieArray ? 
+                            <Slider>
+                                <ImgSlider movie={{state:`search-${keyword}`,data:movieArray||[]}} title={`${keyword}로 검색한 영화`} />
+                            </Slider>:null
+                        }
+                        {
+                            tvArray ? 
+                            <Slider>
+                                <ImgSliderTv movie={{state:`search-${keyword}`,data:tvArray||[]}} title={`${keyword}로 검색한 TV컨텐츠`} />
+                            </Slider>:null
+                        }
                     </SliderBox>
                     <AnimatePresence>
                         {/* http://localhost:3000/search?keyword=master&content=tv */}
@@ -109,6 +120,7 @@ const Search = () => {
                 </>}
             </Container>
         </AnimatePresence>
+        </>
     );
 };
 

@@ -79,6 +79,15 @@ const RowItem = styled(motion.div)`
     }
     /* 이미지를 사이즈에 맞게 퍼센트로 비율을 조정하는듯 */
 `
+const NoImg = styled.div`
+    display:flex;
+    justify-content: center;
+    height:80%;
+    padding:10% 5%;
+    font-size:1.5em;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+`
 const RowItemInfo = styled(motion.div)`
     padding:20px;
     background-color: ${props => props.theme.black.lighter};
@@ -161,7 +170,8 @@ const rowItemInfoVars={
 
 const ImgSlider = ({movie,title}:IProps) => {
     const navigate = useNavigate()
-    const getContent = 'movie'
+    const isSearch = useMatch('/search')
+    const location = useLocation()
     //고유키,fetcher함수. 고유키가 배열. obj도 가능하며 좀더 상세한 고유키를 보여줄수있다
     const {isLoading:nowMvLoading,data:nowMvData} 
     = useQuery<IGetMovies>([`movie-${movie.state}`,`${movie.movieId}`],
@@ -170,7 +180,8 @@ const ImgSlider = ({movie,title}:IProps) => {
     const [leavingSlider,setLeavingSlide] = useState(false)
     const [sliderIndex,setSliderIndex] = useState(0)
     const [prev,setPrev] = useState(false)
-    const isMovie = useMatch('/movie')
+    const movieId = new URLSearchParams(location.search).get('movieId') || new URLSearchParams(location.search).get('searchId')
+    const isHome = movieId ? 'similer' : 'home'
     // key가 0일때는 오른쪽에만 0이아닐때는 왼쪽에도
     const sortedRelease = movie.data ||(nowMvData?.results.sort((a,b) => {
         let x = a.release_date.toLowerCase()
@@ -198,12 +209,15 @@ const ImgSlider = ({movie,title}:IProps) => {
         }
     }
     function goMovieDetail(movieId:string){
-            if(movie.state.includes('search')){
-                let keyword = movie.state.split('-')[1]
-                navigate(`/search?keyword=${keyword}&content=movie&searchId=${movieId}`)
-            }else{
-                navigate(`/movie?movieId=${movieId}&state=${movie.state}`)
-            }
+        if(movie.state.includes('search')){
+            let keyword = movie.state.split('-')[1]
+            navigate(`/search?keyword=${keyword}&content=movie&searchId=${movieId}`)
+        }else if(isSearch){
+            let keyword = new URLSearchParams(location.search).get('keyword')
+            navigate(`/search?keyword=${keyword}&content=movie&searchId=${movieId}`)
+        }else{
+            navigate(`/movie?movieId=${movieId}&state=${movie.state}`)
+        }
     }
     return (
         <Slider>
@@ -230,15 +244,24 @@ const ImgSlider = ({movie,title}:IProps) => {
                         onClick={()=>goMovieDetail(`${item.id}`)}
                         layoutId={`${movie.state}-${item.id}`}
                         >
-                            <img src={makeImgUrl(item.poster_path)}/>
+                            {
+                                item.poster_path || item.backdrop_path ?
+                                <img src={makeImgUrl(item.poster_path)}/> :
+                                <NoImg>{item.title}</NoImg>
+                                }
                             <RowItemInfo variants={rowItemInfoVars}>
-                                <h4>{item.title}<span>{`(${item.release_date.split('-')[0]}-${item.release_date.split('-')[1]})`}</span></h4>
+                                <h4>{item.title}
+                                {
+                                item.release_date ? 
+                                <span>{`(${item.release_date.split('-')[0]}-${item.release_date.split('-')[1]})`}</span> : null
+                                }
+                                </h4>
                                 <p>{`★${item.vote_average}`}<span>{`(${item.vote_count})`}</span></p>
                             </RowItemInfo>
                         </RowItem>
                     )}
                     {sliderIndex?<Prev onClick={sliderKeyDown} initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.1}}>{'<'}</Prev>:null}
-                    <Next state={isMovie?'home':'similer'} initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.1}} onClick={sliderKeyUp}>{'>'}</Next>
+                    <Next state={isHome==='home'?'home':'similer'} initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.1}} onClick={sliderKeyUp}>{'>'}</Next>
                 </Row>
             </AnimatePresence>
             </Wrap>

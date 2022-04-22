@@ -66,6 +66,7 @@ const OverView = styled.p`
 const SliderBox = styled.div`
     position: relative;
     top:-25%;
+    height:100vh;
     /*이부분에 postion rel을 준게 원인이었다. 하위컴포넌트가 다 rel이 먹었으니까 */
 `
 const Slider = styled.div`
@@ -83,7 +84,7 @@ const Tv = () => {
         <>
         <Nav />
         <AnimatePresence>
-            <Container initial={{opacity:0,y:-window.innerHeight}} animate={{opacity:1,y:0}} exit={{opacity:0,x:window.innerWidth}} transition={{duration:0.5,type:"tween"}}>
+            <Container initial={{opacity:0,y:-window.innerHeight}} animate={{opacity:1,y:0}} exit={{opacity:0,x:window.innerWidth}} transition={{duration:0.8,type:"tween"}}>
                 {nowTvLoading ? 
                 <Loader>Loading...</Loader> :
                 <>

@@ -66,7 +66,7 @@ const Movie = () => {
     return (
             <>
             <Nav />
-            <Container initial={{opacity:0,y:-window.innerHeight}} animate={{opacity:1,y:0}} transition={{duration:0.5,type:"tween"}}>
+            <Container initial={{opacity:0,y:-window.innerHeight}} animate={{opacity:1,y:0}} transition={{duration:0.8,type:"tween"}}>
                 <Helmet>
                     <title>KimFlix | Movie</title>
                 </Helmet>
