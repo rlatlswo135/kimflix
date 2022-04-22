@@ -170,7 +170,7 @@ const ImgSlider = ({movie,title}:IProps) => {
     const [leavingSlider,setLeavingSlide] = useState(false)
     const [sliderIndex,setSliderIndex] = useState(0)
     const [prev,setPrev] = useState(false)
-    const isHome = useMatch('/')
+    const isMovie = useMatch('/movie')
     // key가 0일때는 오른쪽에만 0이아닐때는 왼쪽에도
     const sortedRelease = movie.data ||(nowMvData?.results.sort((a,b) => {
         let x = a.release_date.toLowerCase()
@@ -238,7 +238,7 @@ const ImgSlider = ({movie,title}:IProps) => {
                         </RowItem>
                     )}
                     {sliderIndex?<Prev onClick={sliderKeyDown} initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.1}}>{'<'}</Prev>:null}
-                    <Next state={isHome?'home':'similer'} initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.1}} onClick={sliderKeyUp}>{'>'}</Next>
+                    <Next state={isMovie?'home':'similer'} initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.1}} onClick={sliderKeyUp}>{'>'}</Next>
                 </Row>
             </AnimatePresence>
             </Wrap>

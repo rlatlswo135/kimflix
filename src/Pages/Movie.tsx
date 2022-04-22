@@ -1,42 +1,19 @@
 import React,{useState,memo} from 'react';
 import styled from 'styled-components';
 import { useQuery } from 'react-query'
-import {getContents,getTvshows} from '../api'
+import Nav from '../Components/Nav'
+import {getContents} from '../api'
+import { IGetMovies } from '../api';
 import { makeImgUrl } from '../api';
 import { motion,AnimatePresence } from 'framer-motion';
-import {useLocation} from 'react-router-dom'
-import TvModal from '../Components/TvModal';
-import ImgSliderTv from '../Components/ImgSliderTv';
-import {tv} from '../data'
-import Nav from '../Components/Nav'
-interface IGetTvResults{
-    backdrop_path: string
-    first_air_date: string
-    genre_ids: number[]
-    id: number
-    name: string
-    origin_country: string[]
-    original_language: string
-    original_name: string
-    overview: string
-    popularity: number
-    poster_path: string
-    vote_average: number
-    vote_count: number
-}
-interface IGetTv {
-    dates: {
-        maximum: string;
-        minimum: string;
-    }
-    page: number;
-    results:IGetTvResults[];
-    total_pages: number;
-    total_results: number;
-}
+import {useNavigate,useMatch,useLocation} from 'react-router-dom'
+import MovieModal from '../Components/MovieModal';
+import ImgSlider from '../Components/ImgSlider';
+import {movie} from '../data'
+import {Helmet} from 'react-helmet'
+
 const Container = styled(motion.div)`
     height:100vh;
-    transform-origin:center center;
 `
 const Loader = styled.div`
     height:20vh;
@@ -55,7 +32,7 @@ const Banner = styled.div<{bgphoto:string}>`
     background-size: cover;
 `
 const Title = styled.h2`
-    font-size:5em;
+    font-size:10em;
     margin-bottom: 3%;
 `
 const OverView = styled.p`
@@ -71,49 +48,58 @@ const SliderBox = styled.div`
 const Slider = styled.div`
     margin-bottom: 3%;
 `
-
-// on_the_air
-const Tv = () => {
+const Movie = () => {
     const location = useLocation()
-    const isTvRoute = location.search;
+    const isMovieRoute = location.search
     //고유키,fetcher함수. 고유키가 배열. obj도 가능하며 좀더 상세한 고유키를 보여줄수있다
-    const {isLoading:nowTvLoading,data:nowTvData} = useQuery<IGetTv>(['tv','nowPlaying'],()=>getTvshows('on_the_air'))
+    const {isLoading:nowMvLoading,data:nowMvData} = useQuery<IGetMovies>(['movies','nowPlaying'],()=>getContents('now_playing','movie'))
+    const sortedRelease = nowMvData?.results.sort((a,b) => {
+        let x = a.release_date?.toLowerCase()
+        let y = b.release_date?.toLowerCase()
+        if(x && y){
+            if(x < y) return -1
+            if(x > y) return 1
+        }
+        return 0
+    }).reverse()
     //현재 상영중인 영화를 최신순으로 정렬
     return (
-        <>
-        <Nav />
-        <AnimatePresence>
-            <Container initial={{opacity:0,y:-window.innerHeight}} animate={{opacity:1,y:0}} exit={{opacity:0,x:window.innerWidth}} transition={{duration:0.5,type:"tween"}}>
-                {nowTvLoading ? 
+            <>
+            <Nav />
+            <Container initial={{opacity:0,y:-window.innerHeight}} animate={{opacity:1,y:0}} transition={{duration:0.5,type:"tween"}}>
+                <Helmet>
+                    <title>KimFlix | Movie</title>
+                </Helmet>
+                {
+                nowMvLoading ? 
                 <Loader>Loading...</Loader> :
                 <>
-                <Banner bgphoto={makeImgUrl(nowTvData?.results? nowTvData?.results[0].backdrop_path : "")}>
-                    <Title>{nowTvData?.results ? nowTvData?.results[0].name : null}</Title>
-                    <OverView>{nowTvData?.results ? nowTvData?.results[0].overview : null}</OverView>
+                <Banner bgphoto={makeImgUrl(sortedRelease? sortedRelease[0].backdrop_path : "")}>
+                    <Title>{sortedRelease ? sortedRelease[0].title : null}</Title>
+                    <OverView>{sortedRelease ? sortedRelease[0].overview : null}</OverView>
                 </Banner>
                 <SliderBox>
                     {
-                        tv.map((item,index) => (
+                        movie.map((item,index) => (
                             <Slider key={item.title}>
-                                <ImgSliderTv movie={{state:item.state}} title={item.title} />
+                                <ImgSlider movie={{state:item.state}} title={item.title} />
                             </Slider>
                         ))
                     }
                 </SliderBox>
                     <AnimatePresence>
                     {
-                        isTvRoute?<TvModal content={'tv'}/>:null                    
+                        isMovieRoute?<MovieModal content={'movie'}/>:null                    
                     }
                     </AnimatePresence>
                 </>
                 }
             </Container>
-        </AnimatePresence>
-        </>
+            </>
     );
 };
 
-export default Tv;
+export default Movie;
 
                     {/* 실제로 재 렌더되는게 아니다. 애니메이션 효과를주는거다 key가 바뀌면 리액트에셔 해당 요소를 새로운 구성요소로 취급해서
                     전에 key를 갖던 컴포넌트가 마운트가 해제된다 그래서 해제될때 애니메이션이 발동하는거고

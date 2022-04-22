@@ -173,7 +173,7 @@ const navVars ={
 }
 const Nav = () => {
     const navigate = useNavigate()
-    const homeMatch = useLocation().pathname === '/'
+    const homeMatch = useLocation().pathname === '/movie'
     const tvMatch = useLocation().pathname === '/tv'
     const navAnimation = useAnimation()
     const bg = useMotionValue(0)
@@ -222,7 +222,7 @@ const Nav = () => {
                 </motion.path>
             </Logo>
             <Items>
-                <Link to="/">
+                <Link to="/movie">
                     <Item>MOVIE{homeMatch && <Circle layoutId='circle'/>} </Item> 
                 </Link>
                 <Link to="/tv">
