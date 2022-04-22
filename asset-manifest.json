@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/kimflix/static/css/main.073c9b0a.css",
-    "main.js": "/kimflix/static/js/main.2d9e1c10.js",
+    "main.js": "/kimflix/static/js/main.a512036c.js",
     "static/js/787.0fcfcf1f.chunk.js": "/kimflix/static/js/787.0fcfcf1f.chunk.js",
     "index.html": "/kimflix/index.html",
     "main.073c9b0a.css.map": "/kimflix/static/css/main.073c9b0a.css.map",
-    "main.2d9e1c10.js.map": "/kimflix/static/js/main.2d9e1c10.js.map",
+    "main.a512036c.js.map": "/kimflix/static/js/main.a512036c.js.map",
     "787.0fcfcf1f.chunk.js.map": "/kimflix/static/js/787.0fcfcf1f.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.073c9b0a.css",
-    "static/js/main.2d9e1c10.js"
+    "static/js/main.a512036c.js"
   ]
 }
